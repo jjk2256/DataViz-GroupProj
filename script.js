@@ -1,16 +1,161 @@
-// Dark Mode
-const darkModeButton = document.getElementById('dark-mode-toggle');
+// Start Screen
+// Wait for the page to load
+document.addEventListener('DOMContentLoaded', function() {
+    window.onload = function() {
+        const startScreen = document.getElementById('start-screen');
+        const dontShowAgainCheckbox = document.getElementById('dont-show-again');
+        
+        // Check if the user previously selected "Don't show again"
+        if (localStorage.getItem('dontShowStartScreen') === 'true') {
+            startScreen.classList.add('hidden');
+        }
 
+        // Check if the start-button exists and log it
+        const startButton = document.getElementById('start-button');
+        if (startButton) {
+            console.log('Start button exists!');
+        } else {
+            console.log('Start button not found!');
+        }
+
+        // Add click event listener to the "Start Quiz" button
+        startButton.addEventListener('click', function() {
+            console.log('Start button clicked!');
+            
+            // If the checkbox is checked, save the preference to localStorage
+            if (dontShowAgainCheckbox.checked) {
+                localStorage.setItem('dontShowStartScreen', 'true');
+            }
+            
+            // Hide the start screen when the button is clicked
+            startScreen.classList.add('hidden');
+        });
+    };
+});
+
+
+
+// Tab Logic
+// Get buttons and screen elements
+const playButton = document.getElementById('play-button');
+const modesButton = document.getElementById('modes-button');
+const statsButton = document.getElementById('stats-button');
+const screen1 = document.getElementById('screen-1');
+const screen2 = document.getElementById('screen-2');
+const screen3 = document.getElementById('screen-3');
+
+// Add event listeners to the buttons
+playButton.addEventListener('click', () => {
+    screen1.style.display = 'block';
+    screen2.style.display = 'none';
+    screen3.style.display = 'none';
+    
+    // Add 'active' class to the clicked button and remove from others
+    playButton.classList.add('active');
+    modesButton.classList.remove('active');
+    statsButton.classList.remove('active');
+});
+
+modesButton.addEventListener('click', () => {
+    screen1.style.display = 'none';
+    screen2.style.display = 'grid';
+    screen3.style.display = 'none';
+    
+    // Add 'active' class to the clicked button and remove from others
+    modesButton.classList.add('active');
+    playButton.classList.remove('active');
+    statsButton.classList.remove('active');
+});
+
+statsButton.addEventListener('click', () => {
+    screen1.style.display = 'none';
+    screen2.style.display = 'none';
+    screen3.style.display = 'block';
+    
+    // Add 'active' class to the clicked button and remove from others
+    statsButton.classList.add('active');
+    playButton.classList.remove('active');
+    modesButton.classList.remove('active');
+});
+
+// Default: Show the first screen and set the active button
+screen1.style.display = 'block';
+screen2.style.display = 'none';
+screen3.style.display = 'none';
+playButton.classList.add('active');  // Set the initial active button
+
+
+
+
+// Mode Buttons ---------------------------------------------------
+// Get the buttons
+const infiniteButton = document.getElementById('infinite-button');
+const timeButton = document.getElementById('time-button');
+const easyButton = document.getElementById('easy-button');
+const hardButton = document.getElementById('hard-button');
+const lightButton = document.getElementById('light-button');
+const darkButton = document.getElementById('dark-button');
+
+// Function to change the active button in a pair
+function setActiveButton(button, buttonPair) {
+    // Remove 'active' class from both buttons in the pair
+    buttonPair.forEach(b => b.classList.remove('active'));
+
+    // Add 'active' class to the clicked button
+    button.classList.add('active');
+}
+
+// Set the default active button (infinite and easy)
+infiniteButton.classList.add('active');
+hardButton.classList.add('active');
+lightButton.classList.add('active');
+
+// Add event listeners to the buttons
+infiniteButton.addEventListener('click', () => setActiveButton(infiniteButton, [infiniteButton, timeButton]));
+timeButton.addEventListener('click', () => setActiveButton(timeButton, [infiniteButton, timeButton]));
+easyButton.addEventListener('click', () => setActiveButton(easyButton, [easyButton, hardButton]));
+hardButton.addEventListener('click', () => setActiveButton(hardButton, [easyButton, hardButton]));
+lightButton.addEventListener('click', () => setActiveButton(lightButton, [lightButton, darkButton]));
+darkButton.addEventListener('click', () => setActiveButton(darkButton, [lightButton, darkButton]));
+
+
+
+
+
+
+
+
+// Dark Mode Buttons
+const darkModeButton = document.getElementById('dark-button');
+const lightModeButton = document.getElementById('light-button');
+
+// Check and apply dark mode from localStorage on page load
 if (localStorage.getItem('dark-mode') === 'true') {
     document.body.classList.add('dark-mode');
 } else {
     document.body.classList.remove('dark-mode');
 }
 
+// Function to enable dark mode
+function enableDarkMode() {
+    document.body.classList.add('dark-mode');
+    localStorage.setItem('dark-mode', 'true');
+}
+
+// Function to disable dark mode
+function disableDarkMode() {
+    document.body.classList.remove('dark-mode');
+    localStorage.setItem('dark-mode', 'false');
+}
+
+// Event listener for dark mode button (turns dark mode on)
 darkModeButton.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    const darkModeState = document.body.classList.contains('dark-mode') ? 'true' : 'false';
-    localStorage.setItem('dark-mode', darkModeState);
+    enableDarkMode();
+});
+
+// Event listener for light mode button (turns dark mode off)
+lightModeButton.addEventListener('click', () => {
+    disableDarkMode();
 });
 
 
@@ -137,22 +282,38 @@ function updateChoicesForGenre() {
     }
 }
 
-function updateChoicesForYear() {
+function updateChoicesForDecade() {
+    // Extract the correct decade
     const correctYear = currentMovie.release_date.split('-')[0];
-    const yearAfter2000s = Math.floor(Math.random() * 20) + 2000;
+    const correctDecade = `${Math.floor(correctYear / 10) * 10}s`;
 
-    const possibleYears = [correctYear, yearAfter2000s, '1990', '2005', '2010', '2020'].sort(() => 0.5 - Math.random());
+    // Predefined list of decades
+    const allDecades = ['1920s', '1930s', '1940s', '1950s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'];
 
-    const years = [correctYear, ...possibleYears.filter(year => year !== correctYear).slice(0, 3)];
+    // Filter to avoid duplicates and select 3 random other decades
+    const randomDecades = allDecades.filter(decade => decade !== correctDecade).sort(() => 0.5 - Math.random()).slice(0, 3);
 
-    const yearChoices = years.map(
-        year => `<button onclick="checkAnswer(this, '${year}')">${year}</button>`
+    // Combine and shuffle
+    const decades = [correctDecade, ...randomDecades].sort(() => 0.5 - Math.random());
+
+    // Map to buttons
+    const decadeChoices = decades.map(
+        decade => `<button onclick="checkAnswer(this, '${decade}')">${decade}</button>`
     ).join('');
-    
-    document.getElementById('choices').innerHTML = yearChoices;
-    console.log('Correct Year:', correctYear);
+
+    // Update DOM
+    const choicesElement = document.getElementById('choices');
+    if (choicesElement) {
+        choicesElement.innerHTML = decadeChoices;
+    } else {
+        console.error('Element with ID #choices not found');
+    }
+
+    console.log('Correct Decade:', correctDecade);
 }
 
+
+// Adjusted for movie titles containing single-quotes
 async function updateChoicesForTitle() {
     const topMovies = await getTop2000RatedPopularMovies();
 
@@ -163,18 +324,23 @@ async function updateChoicesForTitle() {
     const shuffledTitleChoices = titleChoices.sort(() => 0.5 - Math.random());
 
     const titleButtons = shuffledTitleChoices.map(
-        title => `<button onclick="checkAnswer(this, '${title}')">${title}</button>`
+        title => {
+            // Escape single quotes for safe use in the onclick attribute
+            const escapedTitle = title.replace(/'/g, "\\'");
+            return `<button onclick="checkAnswer(this, '${escapedTitle}')">${title}</button>`;
+        }
     ).join('');
 
     document.getElementById('choices').innerHTML = titleButtons;
 }
+
 
 // Proceeding to the next stage
 async function proceedToNextStage() {
     currentStage++;
     if (currentStage === 2) {
         document.getElementById('stage-instruction').innerText = 'Stage 2: Guess the year!';
-        updateChoicesForYear();
+        updateChoicesForDecade();
     } else if (currentStage === 3) {
         document.getElementById('stage-instruction').innerText = 'Final Stage: Guess the movie!';
         updateChoicesForTitle(); 
@@ -239,16 +405,37 @@ function checkAnswer(button, selectedAnswer) {
     } 
     // Handle Stage 2: Year
     else if (currentStage === 2) {
-        const selectedYear = selectedAnswer;
+        const selectedDecade = selectedAnswer;
         const correctYear = currentMovie.release_date.split('-')[0];
-        isCorrect = selectedYear === correctYear;
+        let correctDecade;
+        
+        // Determine the correct decade based on the release year
+        if (correctYear >= 2020) {
+            correctDecade = '2020s';
+        } else if (correctYear >= 2010) {
+            correctDecade = '2010s';
+        } else {
+            correctDecade = `${Math.floor(correctYear / 10) * 10}s`;
+        }
+    
+        // Compare the selected decade to the correct decade
+        isCorrect = selectedDecade === correctDecade;
         correctYearGuessed = isCorrect;
-        feedbackText = isCorrect ? `Tip 2: It was released in ${selectedYear}` : `Tip 2: It was NOT released in ${selectedYear}`;
-
-        // Update the year feedback
-        const feedbackYearDiv = document.getElementById('feedback-year');
-        feedbackYearDiv.innerHTML = feedbackText;
-    } 
+    
+        // Provide feedback based on whether the selected decade is correct
+        feedbackText = isCorrect 
+            ? `Tip 2: It was released in the ${selectedDecade}` 
+            : `Tip 2: It was NOT released in the ${selectedDecade}`;
+    
+        // Update the decade feedback
+        const feedbackDecadeDiv = document.getElementById('feedback-year');
+        if (feedbackDecadeDiv) {
+            feedbackDecadeDiv.innerHTML = feedbackText;
+        } else {
+            console.error('Element with ID #feedback-year not found');
+        }
+    }
+    
     // Handle Stage 3: Movie Title (Final Stage)
     else if (currentStage === 3) {
         const quizFinishedMessages = [
@@ -319,6 +506,58 @@ function checkAnswer(button, selectedAnswer) {
 
 
 
+
+
+
+// Easy Mode ----------------------------------------------------------
+function toggleOverlayBasedOnMode() {
+    const easyButton = document.getElementById('easy-button');
+    const hardButton = document.getElementById('hard-button');
+    const overlay = document.getElementById('overlay');
+    
+    // Check if easy mode or hard mode is active
+    const isEasyMode = easyButton.classList.contains('active');
+    const isHardMode = hardButton.classList.contains('active');
+    
+    // If easy mode is active, hide the overlay
+    if (isEasyMode) {
+        overlay.style.display = 'none';  // Hide the overlay
+    } 
+    // If hard mode is active, show the overlay
+    else if (isHardMode) {
+        overlay.style.display = 'block';  // Show the overlay
+    } 
+    // If neither is active, show the overlay
+    else {
+        overlay.style.display = 'block';  // Show the overlay
+    }
+}
+
+// Ensure buttons are loaded before adding event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const easyButton = document.getElementById('easy-button');
+    const hardButton = document.getElementById('hard-button');
+    
+    if (easyButton && hardButton) {
+        // Add event listeners to toggle overlay whenever the buttons are clicked
+        easyButton.addEventListener('click', toggleOverlayBasedOnMode);
+        hardButton.addEventListener('click', toggleOverlayBasedOnMode);
+        
+        // Call the function initially to set the correct overlay state
+        toggleOverlayBasedOnMode();
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
 // Stats----------------------------------------------------------
 // Function to display the latest stats on page load
 function displayStats() {
@@ -366,29 +605,62 @@ function updateStats(isCorrect) {
 
 
 
-// Google Sheets Func.
-async function sendStatsToSheet(isCorrect) {
-    const userStats = JSON.parse(localStorage.getItem('userStats')) || { attempts: 0, wins: 0, winRate: 0 };
 
-    // Increment attempts and wins based on the result
-    userStats.attempts++;
-    if (isCorrect) {
-        userStats.wins++;
-    }
-    userStats.winRate = userStats.attempts > 0 ? (userStats.wins / userStats.attempts) * 100 : 0;
+// Get the context of the canvas
+const ctx = document.getElementById('myChart').getContext('2d');
 
-    // Update localStorage
-    localStorage.setItem('userStats', JSON.stringify(userStats));
-``
-    // Send stats to Google Sheet
-    await fetch('https://script.google.com/macros/s/AKfycbz9AhROOrjBductLVu_GIG33t5z7Zmbja-PwWbVGC0bNHLA_asp4PO3zf7uZxwnzjUe0w/exec', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
+// Create the chart
+const myChart = new Chart(ctx, {
+    type: 'bar', 
+    data: {
+        labels: ['GENRE', 'YEAR', 'TITLE'], 
+        datasets: [
+            {
+                label: 'Correct', 
+                data: [10, 5, 7], 
+                backgroundColor: '#339999', 
+                borderWidth: 1
+            },
+            {
+                label: 'Incorrect', 
+                data: [5, 10, 8], 
+                backgroundColor: '#ea696c', 
+                borderWidth: 1
+            }
+        ]
+    },
+    options: {
+        indexAxis: 'y', 
+        animation: {
+            duration: 0 // Disable the animation
         },
-        body: JSON.stringify(userStats),
-    });
-}
+        scales: {
+            x: {
+                beginAtZero: true, 
+                stacked: true,
+                grid: {
+                    display: false 
+                },
+                ticks: {
+                    display: true 
+                },
+                borderColor: 'transparent' 
+            },
+            y: {
+                stacked: true,
+                grid: {
+                    display: false // Hides grid lines
+                },
+                ticks: {
+                    display: true 
+                },
+                borderColor: 'transparent' 
+            }
+        }
+    }
+});
+
+
 
 
 // Start the quiz-------------------------------------------

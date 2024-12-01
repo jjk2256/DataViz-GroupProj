@@ -665,3 +665,4 @@ const myChart = new Chart(ctx, {
 
 // Start the quiz-------------------------------------------
 updateMovieInfo();
+
